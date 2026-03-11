@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../viewmodel/aula_entrada_permissoes_view_model.dart';
@@ -55,6 +56,7 @@ class _AulaEntradaPermissoesPageState extends State<AulaEntradaPermissoesPage> {
       // Dica: use FocusScope.of(context).unfocus().
       onTap: () {
         // TODO: remover o foco atual para esconder o teclado
+        FocusScope.of(context).unfocus();
       },
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
@@ -86,14 +88,14 @@ class _AulaEntradaPermissoesPageState extends State<AulaEntradaPermissoesPage> {
                       children: [
                         Text(
                           '1. Gerenciamento de entrada',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _viewModel.nomeController,
                           // TODO: ligar com um FocusNode específico (ex.: _nomeFocus)
+                          focusNode: _nomeFocus,
                           decoration: const InputDecoration(
                             labelText: 'Nome',
                             border: OutlineInputBorder(),
@@ -104,9 +106,12 @@ class _AulaEntradaPermissoesPageState extends State<AulaEntradaPermissoesPage> {
                           textInputAction: TextInputAction.next,
                           onFieldSubmitted: (_) {
                             // TODO: mudar foco para o campo de e-mail
+                            FocusScope.of(context).requestFocus(_emailFocus);
                           },
                           validator: (v) {
                             // TODO: validar o nome (não permitir vazio)
+                            if (v == null || v.isEmpty)
+                              return "Campo Obrigatorio";
                             return null;
                           },
                         ),
@@ -114,6 +119,7 @@ class _AulaEntradaPermissoesPageState extends State<AulaEntradaPermissoesPage> {
                         TextFormField(
                           controller: _viewModel.emailController,
                           // TODO: ligar com FocusNode do e-mail
+                          focusNode: _emailFocus,
                           decoration: const InputDecoration(
                             labelText: 'E-mail',
                             border: OutlineInputBorder(),
@@ -124,9 +130,13 @@ class _AulaEntradaPermissoesPageState extends State<AulaEntradaPermissoesPage> {
                           textInputAction: TextInputAction.next,
                           onFieldSubmitted: (_) {
                             // TODO: mudar foco para o campo de telefone
+                            FocusScope.of(context).requestFocus(_telefoneFocus);
                           },
                           validator: (v) {
                             // TODO: validar o e-mail (não vazio + conter '@')
+                            if (v == null || v.isEmpty)
+                              return "Campo obrigatorio";
+                            if (!v.contains("@")) return "Deve conter um '@'";
                             return null;
                           },
                         ),
@@ -134,6 +144,7 @@ class _AulaEntradaPermissoesPageState extends State<AulaEntradaPermissoesPage> {
                         TextFormField(
                           controller: _viewModel.telefoneController,
                           // TODO: ligar com FocusNode do telefone
+                          focusNode: _telefoneFocus,
                           decoration: const InputDecoration(
                             labelText: 'Telefone',
                             border: OutlineInputBorder(),
@@ -145,9 +156,12 @@ class _AulaEntradaPermissoesPageState extends State<AulaEntradaPermissoesPage> {
                           textInputAction: TextInputAction.done,
                           onFieldSubmitted: (_) {
                             // TODO: remover o foco atual
+                            FocusScope.of(context).unfocus();
                           },
                           validator: (v) {
                             // TODO: validar o telefone (não permitir vazio)
+                            if (v == null || v.isEmpty)
+                              return "Não pode ser vazio";
                             return null;
                           },
                         ),
@@ -159,7 +173,17 @@ class _AulaEntradaPermissoesPageState extends State<AulaEntradaPermissoesPage> {
                             //       fechar o teclado e mostrar um Snackbar
                             //       com o nome digitado.
                             onPressed: () {
-                              // TODO: implementar lógica do botão Enviar
+                              FocusScope.of(context).unfocus();
+
+                              if (_formKey.currentState!.validate()) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      "Enviado: ${_viewModel.nomeController.text}",
+                                    ),
+                                  ),
+                                );
+                              }
                             },
                             child: const Text('Enviar'),
                           ),
@@ -190,9 +214,8 @@ class _AulaEntradaPermissoesPageState extends State<AulaEntradaPermissoesPage> {
                     children: [
                       Text(
                         '2. Permissões do SO (no web: navegador)',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -203,6 +226,7 @@ class _AulaEntradaPermissoesPageState extends State<AulaEntradaPermissoesPage> {
                               //       e chamar _viewModel.requestCamera() ao clicar.
                               onPressed: () {
                                 // TODO: implementar chamada de permissão de câmera
+                                _viewModel.requestCamera();
                               },
                               icon: _viewModel.cameraLoading
                                   ? const SizedBox(
@@ -223,6 +247,7 @@ class _AulaEntradaPermissoesPageState extends State<AulaEntradaPermissoesPage> {
                               //       _viewModel.requestLocation() ao clicar.
                               onPressed: () {
                                 // TODO: implementar chamada de permissão de localização
+                                _viewModel.requestLocation();
                               },
                               icon: _viewModel.locationLoading
                                   ? const SizedBox(

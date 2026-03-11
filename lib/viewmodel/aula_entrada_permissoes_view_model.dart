@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 // TODO: adicionar os imports abaixo quando for implementar as permissões
 // import 'package:geolocator/geolocator.dart';
 // import 'package:permission_handler/permission_handler.dart';
@@ -47,8 +49,17 @@ class AulaEntradaPermissoesViewModel extends ChangeNotifier {
     // 5. Marcar _cameraLoading como false e chamar notifyListeners().
     //
     // Por enquanto deixamos um texto fixo pra tela não quebrar.
+    _cameraLoading = true;
+    notifyListeners();
+    final status = await Permission.camera.request();
+    if (status.isDenied) {
+      _cameraStatus = 'Permissão negada';
+      Permission.camera.request();
+    } else if (status.isGranted) {
+      _cameraStatus = 'Permissão concedida';
+    }
+
     _cameraLoading = false;
-    _cameraStatus = 'TODO: implementar requestCamera()';
     notifyListeners();
   }
 
@@ -66,8 +77,30 @@ class AulaEntradaPermissoesViewModel extends ChangeNotifier {
     // 6. Marcar _locationLoading como false e chamar notifyListeners().
     //
     // Aqui também deixamos um texto fixo só pra app continuar rodando.
+    _locationLoading = true;
+    notifyListeners();
+
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      _locationStatus = "Localización desactivada";
+    } else {
+      LocationPermission permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        _locationStatus = "Permiso de localización denegado";
+      } else {
+        Position pos = await Geolocator.getCurrentPosition();
+        _locationStatus =
+            "Lat: ${pos.latitude.toStringAsFixed(4)}, Lon: ${pos.longitude.toStringAsFixed(4)}";
+      }
+    }
+
     _locationLoading = false;
-    _locationStatus = 'TODO: implementar requestLocation()';
     notifyListeners();
   }
 
